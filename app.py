@@ -182,7 +182,7 @@ def main() :
         fig.update_xaxes(title_text="킬뎃", range=[-1,2],row=2, col=2) # 파라미터 type="log"
 
         fig.update_yaxes(title_text="", row=1, col=1)
-        fig.update_yaxes(title_text="", range=[0, 10], row=1, col=2)
+        fig.update_yaxes(title_text="", range=[-15, 15], row=1, col=2)
         fig.update_yaxes(title_text="", showgrid=False, row=2, col=1)
         fig.update_yaxes(title_text="", row=2, col=2)
         
