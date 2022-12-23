@@ -3,15 +3,15 @@ import pandas as pd
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
-import matplotlib as mpl
-import plotly.express as px
 from sklearn.preprocessing import LabelEncoder
 from PIL import Image
 import io
 import requests
-
 from pyparsing import empty
-from tkinter.tix import COLUMN
+import plotly.express as px
+from plotly.subplots import make_subplots
+import plotly.graph_objects as go
+# from tkinter.tix import COLUMN
 
 # 이 코드는 ec2에 한글 폰트가 설치되어 있어야 하고,
 # 파이썬에서 한글 사용가능토록 먼저 셋팅해야 한다.
@@ -31,7 +31,7 @@ empty1,con1,empty2 = st.columns([0.2,0.5,0.2])
 empyt1,con2,con3,empty2 = st.columns([0.3,0.2,0.5,0.3])
 empyt1,con4,empty2 = st.columns([0.3,0.7,0.3])
 empyt1,con4_1,empty2 = st.columns([0.3,0.7,0.3])
-empyt1,con5,con6,empty2 = st.columns([0.3,0.35,0.35,0.3])
+empyt1,con5, empty2 = st.columns([0.3,0.7,0.3])
 empyt1,con6_1,empty2 = st.columns([0.3,0.7,0.3])
 empyt1,con7,con8,empty2 = st.columns([0.3,0.35,0.35,0.3])
 empyt1,con8_1,empty2 = st.columns([0.3,0.7,0.3])
@@ -105,7 +105,7 @@ def main() :
             response = requests.get(url)
             image_data = response.content
             image = Image.open(io.BytesIO(image_data))
-            image = image.resize((1200, 300),resample=Image.BICUBIC)
+            image = image.resize((1400, 300),resample=Image.BICUBIC)
             st.image(image)
             
         else:
@@ -114,48 +114,83 @@ def main() :
             response = requests.get(url)
             image_data = response.content
             image = Image.open(io.BytesIO(image_data))
-            image = image.resize((1200, 300),resample=Image.BICUBIC)
+            image = image.resize((1400, 300),resample=Image.BICUBIC)
             st.image(image)
            
         
        
     with con4_1:
-        st.subheader(f'{hero_selceted}의 전투력을 확인합니다.')
-        hero_df = df1.loc[ df1['Name'] == hero_selceted]
         
-
-        # 평균과 비교해서 높은지 낮은지 표시
-     
-
-       
-
+        hero = df1.loc[ df1['Name'] == hero_selceted]
+        Role_group = df1.groupby('Role')[['Win %','Score','Trend','KDA']].agg(np.mean).reset_index()
+        hero_val = hero['Role'].values[0]
+        if len(hero) > 1 :
+            hero = pd.DataFrame(hero.iloc[0]).T
+        choose_role = Role_group.loc[Role_group['Role'].values == hero_val , ]
+        choose_role.set_index(choose_role['Role'].values+'_mean',inplace=True)
+        hero.set_index('Name',inplace=True)
+        hero.drop(['Class','Role','Tier','Role %','Pick %','Ban %'], axis=1 ,inplace=True)
+        choose_role.drop('Role',axis=1,inplace=True)
+        last_df = pd.concat([hero, choose_role], axis=0)
+        last_df.reset_index(inplace=True)
+        #st.dataframe(last_df)
 
     with con5 :
-    
-        # 선택한 영웅의 데이터를 pie chart로 표
-
-        pass
-        # fig = plt.figure()
-        # plt.scatter(x=df['Name'], y=df[df['Name'] == hero_selceted]['Win %'], mode='lines', name=hero_selceted)
-        # st.plotly_chart(fig)
-
-
         
-    with con6 :
-        # 여러가지 차트를 선택할 수 있는 버튼을 만들어서 선택하면 해당 차트가 나오도록
-        pass
-        # st.button('Pick %')
-        # st.button('Ban %')
-        # st.button('KDA')
-        # pie chart, bar chart
-        
-    
+        fig = make_subplots(rows=2, cols=2,subplot_titles=last_df.columns[1:])
+        fig.add_trace(
+            go.Scatter(x=last_df['index'], y=last_df['Score'],name="Score",
+                
+                mode="markers+text",
+                text=last_df['index'].values,
+                textposition="bottom center"
+                    
+                    ),
+            row=1, col=1
+        )
 
-    
+        fig.add_trace(
+            go.Scatter(x=last_df['index'], y=last_df['Trend'],name='Trend',
+                    mode="markers+text",
+                text=last_df['index'].values,
+                textposition="bottom center"
+                    ),
+            row=1, col=2
+        )
+
+        fig.add_trace(
+            go.Scatter(x=last_df['index'], y=last_df['Win %'],name='Win %',
+                    mode="markers+text",
+                text=last_df['index'].values,
+                textposition="bottom center"),
+            row=2, col=1
+        )
+        fig.add_trace(
+            go.Scatter(x=last_df['index'], y=last_df['KDA'],name='KDA',
+                    mode="markers+text",
+                text=last_df['index'].values,
+                textposition="bottom center"),
+            row=2, col=2
+        )
+
+        fig.update_layout(height=600, width=800,legend_title="Legend", title_text="선택한 영웅과 같은 포지션의 평균 스탯을 비교합니다")
+
+
+        fig.update_xaxes(title_text="영웅점수", range=[-1,2],row=1, col=1)
+        fig.update_xaxes(title_text="트렌드점수", range=[-1,2], row=1, col=2)
+        fig.update_xaxes(title_text="승률", range=[-1,2], showgrid=False, row=2, col=1)
+        fig.update_xaxes(title_text="킬뎃", range=[-1,2],row=2, col=2) # 파라미터 type="log"
+
+        fig.update_yaxes(title_text="", row=1, col=1)
+        fig.update_yaxes(title_text="", range=[0, 10], row=1, col=2)
+        fig.update_yaxes(title_text="", showgrid=False, row=2, col=1)
+        fig.update_yaxes(title_text="", row=2, col=2)
+        
+        st.plotly_chart(fig)
+
 
     with con6_1 :
-        st.subheader('어떤 클래스가 트렌디한지 확인합니다.')
-
+        pass
 
     with con7 :
         
@@ -164,7 +199,9 @@ def main() :
         ''')
         st.text('클래스별 트렌드')
         st.bar_chart(df1.groupby('Class')['Trend'].mean())
-        st.dataframe(df1.groupby('Class')['Trend'].mean().sort_values(ascending=False))  
+        st.dataframe(df1.groupby('Class')['Trend'].mean().sort_values(ascending=False)) 
+        
+         
 
 
         st.markdown('''
@@ -180,19 +217,30 @@ def main() :
         st.text('클래스별 스코어')
         st.bar_chart(df1.groupby('Class')['Score'].mean())
         st.dataframe(df1.groupby('Class')['Score'].mean().sort_values(ascending=False))  
+        # fig6 = px.pie(df1, 'Class','Role',title= '클래스별 스코어')
+        # st.plotly_chart(fig6)
 
         st.markdown('''
         -----------
         ''')
+
+        
     with con8_1 :
-        if st.button('<<<<<<<상관관계 분석 버튼>>>>>>>>>>') :                
+        st.subheader('선택한 영웅과 같은 포지션의 좋은 영웅을 추천합니다.')
+        suggestion = df1.loc[ df1['Role'] == hero_val, ]
+        st.dataframe(suggestion.sort_values('Score',ascending=False).head(5))
+
+        if st.button('더 알고싶다면 누르세요') :     
+            st.write('1에 가까울수록 비례관계 -1에 가까울수록 반비례 관계를 하나의 표로 표현한 것입니다.')           
             fig = plt.figure()
             sns.heatmap(df1.corr(), annot=True, cmap='coolwarm', center=0, fmt='.1f', linewidths=1, linecolor='white')
             plt.title('상관관계')
             st.pyplot(fig)
-            st.write('분석결과 Score와 pick % 은 아주 강한 상관관계에 있음을 알 수 있습니다.')
-        
+            st.write('분석결과 Score와 pick % 은 아주 강한 비례관계에 있음을 알 수 있고')
+            st.write('Score와 ban % 은 비례관계임을 알수있습니다.')
+            st.write('결론적으로 Score가 높을수록 게임에 영향이 큰 캐릭터라고 유추할수있습니다.')
 
+       
     
 
 
