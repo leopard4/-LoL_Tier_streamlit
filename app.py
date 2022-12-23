@@ -103,19 +103,25 @@ def main() :
             hero_selceted = st.selectbox('다른 영웅을 선택하고 싶다면, 최근 검색을 비워야만 합니다.', df[df['Name'] == character.capitalize()])
             url = f'https://ddragon.leagueoflegends.com/cdn/img/champion/splash/{hero_selceted}_0.jpg'
             response = requests.get(url)
-            image_data = response.content
-            image = Image.open(io.BytesIO(image_data))
-            image = image.resize((1400, 300),resample=Image.BICUBIC)
-            st.image(image)
+            
+            # html 헤더가 이미지가 맞는지 확인
+            if response.headers['Content-Type'].startswith('image'):
+                image_data = response.content
+                image = Image.open(io.BytesIO(image_data))
+                image = image.resize((1400, 300),resample=Image.BICUBIC)
+                st.image(image)
             
         else:
             hero_selceted = st.selectbox('영웅을 골라보세요', df['Name'].unique())
             url = f'https://ddragon.leagueoflegends.com/cdn/img/champion/splash/{hero_selceted}_0.jpg'
             response = requests.get(url)
-            image_data = response.content
-            image = Image.open(io.BytesIO(image_data))
-            image = image.resize((1400, 300),resample=Image.BICUBIC)
-            st.image(image)
+
+            if response.headers['Content-Type'].startswith('image'):
+                image_data = response.content
+                image = Image.open(io.BytesIO(image_data))
+                image = image.resize((1400, 300),resample=Image.BICUBIC)
+                st.image(image)
+                
            
         
        
