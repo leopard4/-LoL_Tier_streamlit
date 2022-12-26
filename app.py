@@ -202,37 +202,36 @@ def main() :
 
 
     with con6_1 :
-        pass
+
+        # 좋은 클래스와 좋은 라인을 확인합니다.
+        st.markdown('''
+        -----------
+        ''')
+        fig = make_subplots(rows=1, cols=2)
+
+        fig.add_trace(go.Bar(x=df['Class'].unique(), y=df.groupby('Class')['Score'].mean().sort_values(ascending=False),
+                            ),
+                    1, 1)
+
+        fig.add_trace(go.Bar(x=df['Role'].unique(), y=df.groupby('Role')['Score'].mean(),
+                            ),
+                    1, 2)
+
+        fig.update_layout(coloraxis=dict(colorscale='Bluered_r'), showlegend=False,title_text="좋은 클래스와 좋은 라인을 확인합니다.")
+        fig.update_xaxes(title_text="클래스별 평균 Score",row=1, col=1)
+        fig.update_xaxes(title_text="라인별 평균 Score",row=1, col=2)
+
+        st.plotly_chart(fig)
+
+        st.markdown('''
+        -----------
+        ''')
 
     with con7 :
-        
-        # 클래스 카테고리 평균값 차트 
-        st.markdown('''
-        -----------
-        ''')
-        st.text('클래스별 트렌드')
-        st.bar_chart(df1.groupby('Class')['Trend'].mean())
-        st.dataframe(df1.groupby('Class')['Trend'].mean().sort_values(ascending=False)) 
-        
-        st.markdown('''
-        -----------
-        ''')
+        pass
 
-
-       
     with con8 :
-
-        st.markdown('''
-        -----------
-        ''')
-        st.text('클래스별 스코어')
-        st.bar_chart(df1.groupby('Class')['Score'].mean())
-        st.dataframe(df1.groupby('Class')['Score'].mean().sort_values(ascending=False))  
-
-        st.markdown('''
-        -----------
-        ''')
-
+        pass
         
     with con8_1 :
 
