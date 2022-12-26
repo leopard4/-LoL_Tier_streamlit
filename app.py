@@ -203,6 +203,11 @@ def main() :
 
     with con6_1 :
 
+        # 선택한 영웅과 비슷한 추천영웅 데이터 프레임으로 표시
+        st.subheader('선택한 영웅과 같은 포지션의 좋은 영웅을 추천합니다.')
+        suggestion = df1.loc[ df1['Role'] == hero_val, ]
+        st.dataframe(suggestion.sort_values('Score',ascending=False).head(5))
+
         # 좋은 클래스와 좋은 라인을 확인합니다.
         st.markdown('''
         -----------
@@ -234,11 +239,6 @@ def main() :
         pass
         
     with con8_1 :
-
-        # 선택한 영웅과 비슷한 추천영웅 데이터 프레임으로 표시
-        st.subheader('선택한 영웅과 같은 포지션의 좋은 영웅을 추천합니다.')
-        suggestion = df1.loc[ df1['Role'] == hero_val, ]
-        st.dataframe(suggestion.sort_values('Score',ascending=False).head(5))
 
         # 버튼을 누르면 상관관계를 표시함
         if st.button('더 알고싶다면 누르세요') :     
